@@ -1,2 +1,5 @@
 Hello, this is my first file
 Adding a new line
+This is another line
+More content here
+Final line added
