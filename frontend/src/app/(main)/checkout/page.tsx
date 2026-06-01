@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi, ordersApi } from '@/lib/api'
 import { Address, PaymentMethod } from '@/types'
 import { useCart } from '@/contexts/CartContext'
@@ -24,6 +24,7 @@ export default function CheckoutPage() {
   const { cart } = useCart()
   const { user } = useAuth()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CREDIT_CARD')
   const [notes, setNotes] = useState('')
@@ -44,6 +45,10 @@ export default function CheckoutPage() {
     onSuccess: (res) => {
       const order = res.data.data
       toast.success('Order placed successfully!')
+      // Clear cart cache immediately so navbar badge and cart page both update
+      queryClient.setQueryData(['cart'], null)
+      queryClient.invalidateQueries({ queryKey: ['cart'] })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
       router.push(`/orders/${order.id}`)
     },
     onError: (err: unknown) => {

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { AuthResponse } from '@/types'
 import { authApi } from '@/lib/api'
 import { saveAuth, clearAuth, getStoredUser, isAuthenticated } from '@/lib/auth'
@@ -30,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -64,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     clearAuth()
     setUser(null)
+    // Wipe all cached query data so the next user sees a clean state
+    queryClient.clear()
     toast.info('Logged out')
     router.push('/login')
   }
